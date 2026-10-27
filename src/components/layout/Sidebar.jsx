@@ -81,30 +81,6 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
       </div>
 
       {/* Bottom links */}
-      <div className="shrink-0 space-y-1 border-t p-4">
-        <button
-          type="button"
-          className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        >
-          <Settings size={18} />
-          Settings
-        </button>
-
-        <button
-          type="button"
-          className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        >
-          <CircleHelp size={18} />
-          Help & Support
-        </button>
-
-        <div className="mt-4 rounded-xl bg-muted/60 p-3">
-          <p className="text-sm font-semibold">Need a hand?</p>
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            Stay organized and get more done with TaskFlow.
-          </p>
-        </div>
-      </div>
     </aside>
   );
 }

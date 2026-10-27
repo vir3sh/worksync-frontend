@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import {
   CheckSquare,
@@ -49,8 +48,7 @@ export default function DashboardPage() {
       } catch (err) {
         if (!cancelled) {
           setError(
-            err.response?.data?.message ||
-              "Unable to load your workspaces."
+            err.response?.data?.message || "Unable to load your workspaces.",
           );
         }
       } finally {
@@ -76,9 +74,7 @@ export default function DashboardPage() {
       setDashboard(null);
 
       try {
-        const response = await api.get(
-          `/dashboard/workspaces/${workspaceId}`
-        );
+        const response = await api.get(`/dashboard/workspaces/${workspaceId}`);
 
         if (!cancelled) {
           setDashboard(response.data.data);
@@ -87,7 +83,7 @@ export default function DashboardPage() {
         if (!cancelled) {
           setError(
             err.response?.data?.message ||
-              "Unable to load dashboard statistics."
+              "Unable to load dashboard statistics.",
           );
         }
       } finally {
@@ -143,9 +139,7 @@ export default function DashboardPage() {
     <div className="mx-auto max-w-7xl space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Overview
-          </h1>
+          <h1 className="text-2xl font-bold tracking-tight">Overview</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Here's what's happening in your workspace.
           </p>
@@ -186,7 +180,10 @@ export default function DashboardPage() {
 
       {!loading && !error && workspaces.length === 0 && (
         <div className="rounded-xl border bg-white p-8 text-center">
-          <FolderKanban className="mx-auto mb-3 text-muted-foreground" size={32} />
+          <FolderKanban
+            className="mx-auto mb-3 text-muted-foreground"
+            size={32}
+          />
           <h2 className="font-semibold">No workspaces yet</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Create a workspace to start organizing projects and tasks.
@@ -218,9 +215,7 @@ export default function DashboardPage() {
                 </div>
 
                 <p className="mt-4 text-3xl font-bold">{value}</p>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {detail}
-                </p>
+                <p className="mt-2 text-xs text-muted-foreground">{detail}</p>
               </div>
             ))}
           </section>
@@ -229,8 +224,7 @@ export default function DashboardPage() {
             <div className="rounded-xl border bg-white p-6 lg:col-span-2">
               <h2 className="font-semibold">Workspace projects</h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                You have {dashboard.projects.total} projects,
-                including {dashboard.projects.active} active projects.
+                You have {dashboard.projects.total} projects
               </p>
             </div>
 

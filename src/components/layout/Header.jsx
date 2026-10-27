@@ -309,16 +309,6 @@ export default function Header({ onMenuClick }) {
       {/* Mobile sidebar toggle */}
 
       {/* Search */}
-      <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2 sm:gap-3">
-        <Search size={18} className="shrink-0 text-muted-foreground" />
-
-        <input
-          type="search"
-          placeholder="Search anything..."
-          aria-label="Search"
-          className="w-full min-w-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-        />
-      </div>
 
       {/* Header actions */}
       <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-3">

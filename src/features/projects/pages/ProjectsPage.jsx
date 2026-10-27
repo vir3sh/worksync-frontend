@@ -20,7 +20,7 @@ export default function ProjectsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState("");
-
+  const [userRole, setUserRole] = useState("");
   useEffect(() => {
     let cancelled = false;
 
@@ -52,6 +52,20 @@ export default function ProjectsPage() {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  const canCreateProject = ["hr", "manager"].includes(userRole);
+  useEffect(() => {
+    async function loadCurrentUser() {
+      try {
+        const response = await api.get("/users/me");
+        setUserRole(response.data?.data?.user?.role || "");
+      } catch (err) {
+        console.error("Unable to load user role:", err);
+      }
+    }
+
+    loadCurrentUser();
   }, []);
 
   useEffect(() => {
@@ -130,7 +144,7 @@ export default function ProjectsPage() {
           </p>
         </div>
 
-        {workspaceId && (
+        {workspaceId && canCreateProject && (
           <Button
             onClick={() => navigate(`/workspaces/${workspaceId}/projects/new`)}
           >
@@ -200,13 +214,16 @@ export default function ProjectsPage() {
           <p className="mt-2 text-sm text-muted-foreground">
             Create your first project to get started.
           </p>
-          <Button
-            className="mt-4"
-            onClick={() => navigate(`/workspaces/${workspaceId}/projects/new`)}
-          >
-            <Plus size={18} className="mr-2" />
-            Create project
-          </Button>
+          {workspaceId && canCreateProject && (
+            <Button
+              onClick={() =>
+                navigate(`/workspaces/${workspaceId}/projects/new`)
+              }
+            >
+              <Plus size={18} className="mr-2" />
+              Create project
+            </Button>
+          )}
         </div>
       )}
 
