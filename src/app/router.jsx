@@ -17,6 +17,8 @@ import MyTasksPage from "@/features/tasks/pages/MyTasksPage";
 import EditTaskPage from "@/features/tasks/pages/EditTaskPage";
 import ProjectMembersPage from "@/features/projects/pages/ProjectMembersPage";
 import TeamPage from "@/features/team/pages/TeamPage";
+import WorkspaceMembersPage from "@/features/workspaces/pages/WorkspaceMembersPage";
+import WorkspaceInvitationsPage from "@/features/workspaces/pages/WorkspaceInvitationsPage";
 
 function PlaceholderPage({ title }) {
   return (
@@ -95,6 +97,14 @@ export const router = createBrowserRouter([
           {
             path: "workspaces/new",
             element: <CreateWorkspacePage />,
+          },
+          {
+            path: "/workspaces/:workspaceId/members",
+            element: <WorkspaceMembersPage />,
+          },
+          {
+            path: "/invitations",
+            element: <WorkspaceInvitationsPage />,
           },
         ],
       },

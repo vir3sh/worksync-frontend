@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, FolderKanban, LoaderCircle } from "lucide-react";
+import { Plus, FolderKanban, LoaderCircle, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import api from "@/lib/api";
@@ -133,9 +133,17 @@ export default function WorkspacesPage() {
               </p>
 
               <div className="mt-4 flex items-center justify-between border-t pt-4 text-xs text-muted-foreground">
-                <span>/{workspace.slug}</span>
-
-                <span className="capitalize">{workspace.role}</span>
+                <Button
+                  variant="outline"
+                  className="mt-4 w-50 "
+                  onClick={() =>
+                    navigate(`/workspaces/${workspace.id}/members`)
+                  }
+                >
+                  <UserPlus size={17} className="mr-2" />
+                  Manage members
+                </Button>
+                {/* <span className="capitalize">{workspace.role}</span> */}
               </div>
             </div>
           ))}

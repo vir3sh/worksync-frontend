@@ -72,14 +72,14 @@ export default function RegisterPage() {
           <span className="flex size-10 items-center justify-center rounded-xl bg-indigo-600 text-white">
             <CheckCheck size={22} />
           </span>
-          <span className="text-2xl font-bold tracking-tight">TaskFlow</span>
+          <span className="text-2xl font-bold tracking-tight">WorkSync</span>
         </Link>
 
         <Card className="border-slate-200 shadow-sm">
           <CardHeader>
             <CardTitle className="text-2xl">Create your account</CardTitle>
             <CardDescription>
-              Get started with your TaskFlow workspace.
+              Get started with your WorkSync workspace.
             </CardDescription>
           </CardHeader>
 

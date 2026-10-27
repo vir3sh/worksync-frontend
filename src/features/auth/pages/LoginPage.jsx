@@ -76,7 +76,7 @@ export default function LoginPage() {
             <CheckCheck size={22} />
           </span>
 
-          <span className="text-2xl font-bold tracking-tight">TaskFlow</span>
+          <span className="text-2xl font-bold tracking-tight">WorkSync</span>
         </Link>
 
         <Card className="border-slate-200 shadow-sm">

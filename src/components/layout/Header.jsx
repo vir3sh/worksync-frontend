@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   Bell,
   CheckCheck,
@@ -7,6 +7,7 @@ import {
   Clock3,
   LoaderCircle,
   LogOut,
+  Mail,
   Menu,
   Search,
   UserRound,
@@ -312,6 +313,19 @@ export default function Header({ onMenuClick }) {
 
       {/* Header actions */}
       <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-3">
+        <NavLink
+          to="/invitations"
+          className={({ isActive }) =>
+            `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
+              isActive
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+            }`
+          }
+        >
+          <Mail className="size-4" />
+          Invitations
+        </NavLink>
         {/* Notifications */}
         <div className="relative" ref={notificationRef}>
           <Button

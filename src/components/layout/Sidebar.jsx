@@ -39,7 +39,7 @@ export default function Sidebar({ open = false, onClose = () => {} }) {
             <CheckCheck size={21} />
           </div>
 
-          <span className="text-xl font-bold tracking-tight">TaskFlow</span>
+          <span className="text-xl font-bold tracking-tight">WorkSync</span>
         </div>
 
         <button
