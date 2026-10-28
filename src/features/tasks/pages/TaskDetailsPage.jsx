@@ -28,6 +28,7 @@ export default function TaskDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [workspaceRole, setWorkspaceRole] = useState("");
 
   const tasksUrl = `/workspaces/${workspaceId}/projects/${projectId}/tasks`;
 
@@ -71,6 +72,36 @@ export default function TaskDetailsPage() {
       setSaving(false);
     }
   };
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadWorkspaceRole() {
+      try {
+        const response = await api.get("/workspaces/my-workspaces");
+        const workspaces = response.data?.data?.workspaces ?? [];
+
+        const currentWorkspace = workspaces.find(
+          (workspace) => String(workspace.id) === String(workspaceId),
+        );
+
+        if (!cancelled) {
+          setWorkspaceRole(currentWorkspace?.role || "");
+        }
+      } catch (err) {
+        console.error("Unable to load workspace role:", err);
+
+        if (!cancelled) {
+          setWorkspaceRole("");
+        }
+      }
+    }
+
+    loadWorkspaceRole();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [workspaceId]);
 
   if (loading) {
     return (
@@ -155,18 +186,20 @@ export default function TaskDetailsPage() {
                 Status
               </label>
 
-              <button
-                type="button"
-                onClick={() =>
-                  navigate(
-                    `/workspaces/${workspaceId}/projects/${projectId}/tasks/${taskId}/edit`,
-                  )
-                }
-                className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground shadow-sm transition-all duration-200 hover:border-primary/40 hover:bg-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-              >
-                <Pencil className="h-4 w-4" />
-                Edit task
-              </button>
+              {workspaceRole !== "employee" && workspaceRole !== "" && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate(
+                      `/workspaces/${workspaceId}/projects/${projectId}/tasks/${taskId}/edit`,
+                    )
+                  }
+                  className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground shadow-sm transition-all duration-200 hover:border-primary/40 hover:bg-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                >
+                  <Pencil className="h-4 w-4" />
+                  Edit task
+                </button>
+              )}
             </div>
 
             <div className="flex items-center gap-2">
