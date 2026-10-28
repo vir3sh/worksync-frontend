@@ -171,9 +171,9 @@ export default function LoginPage() {
           </CardContent>
         </Card>
 
-        <p className="mt-6 text-center text-xs text-muted-foreground">
+        {/* <p className="mt-6 text-center text-xs text-muted-foreground">
           By continuing, you agree to your organization's terms of use.
-        </p>
+        </p> */}
       </div>
     </main>
   );
