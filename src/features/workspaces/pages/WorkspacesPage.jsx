@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { Plus, FolderKanban, LoaderCircle, UserPlus } from "lucide-react";
+import {
+  Plus,
+  FolderKanban,
+  LoaderCircle,
+  UserPlus,
+  BuildingComplex,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import api from "@/lib/api";
@@ -55,7 +61,10 @@ export default function WorkspacesPage() {
       {/* Page header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Workspaces</h1>
+          <div className="flex gap-2 items-center">
+            <BuildingComplex className="h-6 w-6 text-indigo-600" />
+            <h1 className="text-2xl font-bold tracking-tight">Workspaces</h1>
+          </div>
 
           <p className="mt-1 text-sm text-muted-foreground">
             Organize your projects and collaborate with your team.

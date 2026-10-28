@@ -430,7 +430,7 @@ export default function MyTasksPage() {
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <div className="flex items-center gap-2">
-            <ListTodo className="h-6 w-6 text-primary" />
+            <ListTodo className="h-6 w-6 text-indigo-600" />
             <h1 className="text-2xl font-bold tracking-tight">My Tasks</h1>
           </div>
 

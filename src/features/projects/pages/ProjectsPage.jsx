@@ -6,6 +6,7 @@ import {
   Trash2,
   LoaderCircle,
   CalendarDays,
+  FolderOpenDot,
 } from "lucide-react";
 
 import api from "@/lib/api";
@@ -21,6 +22,7 @@ export default function ProjectsPage() {
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState("");
   const [userRole, setUserRole] = useState("");
+  const [canCreateWorkspace, setCanCreateWorkspace] = useState(false);
   useEffect(() => {
     let cancelled = false;
 
@@ -54,14 +56,17 @@ export default function ProjectsPage() {
     };
   }, []);
 
-  const canCreateProject = ["hr", "manager"].includes(userRole);
   useEffect(() => {
     async function loadCurrentUser() {
       try {
         const response = await api.get("/users/me");
-        setUserRole(response.data?.data?.user?.role || "");
+
+        setCanCreateWorkspace(
+          response.data?.data?.user?.canCreateWorkspace === true,
+        );
       } catch (err) {
-        console.error("Unable to load user role:", err);
+        console.error("Unable to load workspace permissions:", err);
+        setCanCreateWorkspace(false);
       }
     }
 
@@ -125,6 +130,23 @@ export default function ProjectsPage() {
     }
   }
 
+  useEffect(() => {
+    async function loadCurrentUser() {
+      try {
+        const response = await api.get("/users/me");
+
+        setCanCreateWorkspace(
+          response.data?.data?.user?.canCreateWorkspace === true,
+        );
+      } catch (err) {
+        console.error("Unable to load workspace permissions:", err);
+        setCanCreateWorkspace(false);
+      }
+    }
+
+    loadCurrentUser();
+  }, []);
+  const canCreateProject = ["hr", "manager"].includes(userRole);
   if (loading && workspaces.length === 0) {
     return (
       <div className="flex items-center gap-2 p-6 text-sm text-muted-foreground">
@@ -133,12 +155,14 @@ export default function ProjectsPage() {
       </div>
     );
   }
-
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Projects</h1>
+          <div className="flex gap-2 items-center">
+            <FolderOpenDot className="h-6 w-6 text-indigo-600" />
+            <h1 className="text-2xl font-bold tracking-tight">Projects</h1>
+          </div>
           <p className="mt-1 text-sm text-muted-foreground">
             Organize work and track project progress.
           </p>
@@ -190,13 +214,20 @@ export default function ProjectsPage() {
             size={36}
             className="mx-auto mb-3 text-muted-foreground"
           />
-          <h2 className="font-semibold">Create a workspace first</h2>
+          <h2 className="font-semibold">Not included in any Project</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Projects belong to a workspace.
           </p>
-          <Button className="mt-4" onClick={() => navigate("/workspaces/new")}>
-            Create workspace
-          </Button>
+
+          {canCreateWorkspace && (
+            <Button
+              className="mt-4"
+              onClick={() => navigate("/workspaces/new")}
+            >
+              <Plus size={18} className="mr-2" />
+              Create workspace
+            </Button>
+          )}
         </div>
       )}
 
