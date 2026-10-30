@@ -31,7 +31,7 @@ export default function ProjectMembersPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const tasksUrl = `/workspaces/${workspaceId}/projects/${projectId}/tasks`;
+  const tasksUrl = `/tasks`;
 
   const loadMembers = useCallback(async () => {
     try {
