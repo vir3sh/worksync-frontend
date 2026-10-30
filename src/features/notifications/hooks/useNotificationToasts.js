@@ -54,7 +54,7 @@ export default function useNotificationToasts() {
     };
 
     fetchNotifications();
-    intervalId = setInterval(fetchNotifications, 5000);
+    intervalId = setInterval(fetchNotifications, 60 * 60 * 1000);
 
     return () => {
       active = false;
