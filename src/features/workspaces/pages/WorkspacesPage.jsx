@@ -4,7 +4,7 @@ import {
   FolderKanban,
   LoaderCircle,
   UserPlus,
-  BuildingComplex,
+  Building2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -13,13 +13,11 @@ import { Button } from "@/components/ui/button";
 
 export default function WorkspacesPage() {
   const [workspaces, setWorkspaces] = useState([]);
-  const [userRole, setUserRole] = useState("");
+  const [canCreateWorkspace, setCanCreateWorkspace] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
-
-  const canCreateWorkspace = ["hr", "manager"].includes(userRole);
 
   useEffect(() => {
     let cancelled = false;
@@ -37,7 +35,10 @@ export default function WorkspacesPage() {
         if (cancelled) return;
 
         setWorkspaces(workspacesResponse.data?.data?.workspaces || []);
-        setUserRole(userResponse.data?.data?.user?.role || "");
+
+        setCanCreateWorkspace(
+          userResponse.data?.data?.user?.canCreateWorkspace === true,
+        );
       } catch (err) {
         if (!cancelled) {
           setError(
@@ -61,8 +62,9 @@ export default function WorkspacesPage() {
       {/* Page header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <div className="flex gap-2 items-center">
-            <BuildingComplex className="h-6 w-6 text-indigo-600" />
+          <div className="flex items-center gap-2">
+            <Building2 className="h-6 w-6 text-indigo-600" />
+
             <h1 className="text-2xl font-bold tracking-tight">Workspaces</h1>
           </div>
 
@@ -71,8 +73,7 @@ export default function WorkspacesPage() {
           </p>
         </div>
 
-        {/* Only HR and Manager can create workspaces */}
-        {canCreateWorkspace && (
+        {!loading && canCreateWorkspace && (
           <Button onClick={() => navigate("/workspaces/new")}>
             <Plus size={18} className="mr-2" />
             Create workspace
@@ -109,10 +110,9 @@ export default function WorkspacesPage() {
           <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
             {canCreateWorkspace
               ? "Create your first workspace to start managing projects and tasks."
-              : "You haven't been added to any workspace yet. Contact your HR or manager to get access."}
+              : "You haven't been added to any workspace yet. Contact your system administrator to request workspace creation access."}
           </p>
 
-          {/* Only HR and Manager see this button */}
           {canCreateWorkspace && (
             <Button
               className="mt-5"
@@ -141,10 +141,13 @@ export default function WorkspacesPage() {
                 {workspace.description || "No description provided."}
               </p>
 
-              <div className="mt-4 flex items-center justify-between border-t pt-4 text-xs text-muted-foreground">
+              <div className="mt-4 flex items-center justify-between border-t pt-4">
+                <span className="text-xs capitalize text-muted-foreground">
+                  {workspace.role}
+                </span>
+
                 <Button
                   variant="outline"
-                  className="mt-4 w-50 "
                   onClick={() =>
                     navigate(`/workspaces/${workspace.id}/members`)
                   }
@@ -152,7 +155,6 @@ export default function WorkspacesPage() {
                   <UserPlus size={17} className="mr-2" />
                   Manage members
                 </Button>
-                {/* <span className="capitalize">{workspace.role}</span> */}
               </div>
             </div>
           ))}
