@@ -46,7 +46,7 @@ export default function CreateTaskPage() {
   const [workspaceRole, setWorkspaceRole] = useState("");
   const [checkingRole, setCheckingRole] = useState(true);
 
-  const tasksUrl = `/workspaces/${workspaceId}/projects/${projectId}/tasks`;
+  const tasksUrl = `/tasks`;
 
   useEffect(() => {
     let cancelled = false;
