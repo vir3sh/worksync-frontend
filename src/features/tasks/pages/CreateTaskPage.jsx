@@ -22,6 +22,16 @@ function getMemberName(member) {
   return user?.name || user?.email || "Team member";
 }
 
+function getArray(data, key) {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.[key])) return data[key];
+  return [];
+}
+
+function getId(item) {
+  return item?._id || item?.id || "";
+}
+
 export default function CreateTaskPage() {
   const { workspaceId, projectId } = useParams();
   const navigate = useNavigate();
@@ -33,40 +43,45 @@ export default function CreateTaskPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const [userRole, setUserRole] = useState(null);
+  const [workspaceRole, setWorkspaceRole] = useState("");
   const [checkingRole, setCheckingRole] = useState(true);
+
+  const tasksUrl = `/workspaces/${workspaceId}/projects/${projectId}/tasks`;
 
   useEffect(() => {
     let cancelled = false;
 
-    async function loadCurrentUser() {
+    async function loadWorkspaceRole() {
       try {
-        const response = await api.get("/users/me");
-        const data = response.data.data;
-        const user = data?.user || data;
+        const response = await api.get("/workspaces/my-workspaces");
+        const workspaceData = response.data?.data;
+        const workspaceList = getArray(workspaceData, "workspaces");
+
+        const currentWorkspace = workspaceList.find(
+          (workspace) => String(getId(workspace)) === String(workspaceId),
+        );
 
         if (!cancelled) {
-          setUserRole(user?.role || "");
+          setWorkspaceRole(
+            String(currentWorkspace?.role || "").toLowerCase(),
+          );
         }
-      } catch {
-        if (!cancelled) {
-          setUserRole("");
-        }
+      } catch (err) {
+        console.error("Failed to load workspace permissions:", err);
+        if (!cancelled) setWorkspaceRole("");
       } finally {
-        if (!cancelled) {
-          setCheckingRole(false);
-        }
+        if (!cancelled) setCheckingRole(false);
       }
     }
 
-    loadCurrentUser();
+    loadWorkspaceRole();
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [workspaceId]);
 
-  const tasksUrl = `/workspaces/${workspaceId}/projects/${projectId}/tasks`;
+  const canCreateTask = ["owner", "admin", "manager"].includes(workspaceRole);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -86,8 +101,7 @@ export default function CreateTaskPage() {
         `/projects/${workspaceId}/projects/${projectId}/members`,
       );
 
-      // The API payload is response.data.data.
-      const data = response.data.data;
+      const data = response.data?.data;
       const memberList = Array.isArray(data) ? data : data?.members || [];
 
       setMembers(memberList);
@@ -107,6 +121,11 @@ export default function CreateTaskPage() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
+
+    if (!canCreateTask) {
+      setError("You don't have permission to create tasks in this workspace.");
+      return;
+    }
 
     const title = form.title.trim();
     const description = form.description.trim();
@@ -150,8 +169,8 @@ export default function CreateTaskPage() {
         `/projects/${workspaceId}/projects/${projectId}/tasks`,
         payload,
       );
-      toast.success("Task created successfully!");
 
+      toast.success("Task created successfully!");
       navigate(tasksUrl);
     } catch (err) {
       setError(
@@ -167,9 +186,10 @@ export default function CreateTaskPage() {
     return <p className="p-6 text-sm">Checking permissions...</p>;
   }
 
-  if (!["hr", "manager"].includes(userRole)) {
+  if (!canCreateTask) {
     return <Navigate to="/tasks" replace />;
   }
+
   return (
     <section className="mx-auto max-w-3xl space-y-6 p-6">
       <button
