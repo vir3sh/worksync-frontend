@@ -62,9 +62,7 @@ export default function CreateTaskPage() {
         );
 
         if (!cancelled) {
-          setWorkspaceRole(
-            String(currentWorkspace?.role || "").toLowerCase(),
-          );
+          setWorkspaceRole(String(currentWorkspace?.role || "").toLowerCase());
         }
       } catch (err) {
         console.error("Failed to load workspace permissions:", err);
@@ -153,13 +151,17 @@ export default function CreateTaskPage() {
       setError("Due date cannot be in the past.");
       return;
     }
+    if (!form.assignedTo) {
+      setError("Please select a team member to assign this task.");
+      return;
+    }
 
     const payload = {
       title,
       description,
       priority: form.priority,
       dueDate,
-      assignedTo: form.assignedTo || null,
+      assignedTo: form.assignedTo,
     };
 
     try {
@@ -302,15 +304,24 @@ export default function CreateTaskPage() {
             name="assignedTo"
             value={form.assignedTo}
             onChange={handleChange}
-            disabled={membersLoading || Boolean(membersError)}
+            required
+            disabled={
+              loading ||
+              membersLoading ||
+              Boolean(membersError) ||
+              members.length === 0 ||
+              !form.assignedTo
+            }
             className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <option value="">
+            <option value="" disabled>
               {membersLoading
                 ? "Loading members..."
                 : membersError
                   ? "Members unavailable"
-                  : "Unassigned"}
+                  : members.length === 0
+                    ? "No project members available"
+                    : "Select a team member"}
             </option>
 
             {members.map((member, index) => {
