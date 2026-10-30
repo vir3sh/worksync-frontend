@@ -63,52 +63,6 @@ function getStatusLabel(status) {
   return labels[normalized] || normalized;
 }
 
-const handleDeleteTask = async (event, task) => {
-  event.stopPropagation();
-
-  const taskId = task._id || task.id;
-
-  if (!task._workspaceId || !task._projectId || !taskId) {
-    window.alert("Missing workspace, project, or task ID.");
-    return;
-  }
-
-  if (!window.confirm(`Delete "${task.title}" permanently?`)) {
-    return;
-  }
-
-  console.log({
-    taskId: task._id || task.id,
-    workspaceId: task._workspaceId,
-    projectId: task._projectId,
-  });
-  try {
-    const response = await api.delete(
-      `/projects/${task._workspaceId}/projects/${task._projectId}/tasks/${taskId}`,
-    );
-
-    setTasks((previousTasks) =>
-      previousTasks.filter(
-        (item) => String(item._id || item.id) !== String(taskId),
-      ),
-    );
-
-    console.log("Task deleted:", response.data);
-  } catch (error) {
-    console.error("Delete task error:", {
-      status: error.response?.status,
-      data: error.response?.data,
-      url: error.config?.url,
-      message: error.message,
-    });
-
-    window.alert(
-      error.response?.data?.message ||
-        `Delete failed (${error.response?.status || "network error"}). Check the browser console.`,
-    );
-  }
-};
-
 function getStatusClass(status) {
   const normalized = normalizeStatus(status);
 
@@ -171,7 +125,6 @@ export default function MyTasksPage() {
 
   const [tasks, setTasks] = useState([]);
   const [currentUserId, setCurrentUserId] = useState("");
-  const [userRole, setUserRole] = useState("");
 
   const [workspaces, setWorkspaces] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -190,7 +143,23 @@ export default function MyTasksPage() {
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState("");
   const [selectedProjectId, setSelectedProjectId] = useState("");
 
-  const canAssignTasks = ["hr", "manager"].includes(userRole.toLowerCase());
+  const selectedWorkspace = workspaces.find(
+    (workspace) => String(getId(workspace)) === String(selectedWorkspaceId),
+  );
+
+  const canCreateTaskInSelectedWorkspace = [
+    "owner",
+    "admin",
+    "manager",
+  ].includes(String(selectedWorkspace?.role || "").toLowerCase());
+
+  // Show the create-task workflow only if the user can create tasks
+  // in at least one workspace. The selected workspace is checked separately.
+  const canCreateTasksSomewhere = workspaces.some((workspace) =>
+    ["owner", "admin", "manager"].includes(
+      String(workspace.role || "").toLowerCase(),
+    ),
+  );
 
   const loadTasks = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
@@ -208,10 +177,7 @@ export default function MyTasksPage() {
       ]);
 
       const userData = userResponse.data?.data?.user;
-      const userId = getId(userData);
-
-      setCurrentUserId(userId);
-      setUserRole(String(userData?.role || "").toLowerCase());
+      setCurrentUserId(getId(userData));
 
       const workspaceData = workspaceResponse.data?.data;
       const workspaceList = getArray(workspaceData, "workspaces");
@@ -247,6 +213,7 @@ export default function MyTasksPage() {
                 _projectId: projectId,
                 _workspaceName: workspace.name || "Workspace",
                 _projectName: project.name || "Project",
+                _workspaceRole: String(workspace.role || "").toLowerCase(),
               }));
             }),
           );
@@ -400,8 +367,52 @@ export default function MyTasksPage() {
     (task) => normalizeStatus(task.status) !== "completed",
   ).length;
 
+  const handleDeleteTask = async (event, task) => {
+    event.stopPropagation();
+
+    const taskId = getId(task);
+
+    if (!task._workspaceId || !task._projectId || !taskId) {
+      toast.error("Missing workspace, project, or task ID.");
+      return;
+    }
+
+    if (!["owner", "admin", "manager"].includes(task._workspaceRole)) {
+      toast.error("You don't have permission to delete this task.");
+      return;
+    }
+
+    if (!window.confirm(`Delete "${task.title || "this task"}" permanently?`)) {
+      return;
+    }
+
+    try {
+      await api.delete(
+        `/projects/${task._workspaceId}/projects/${task._projectId}/tasks/${taskId}`,
+      );
+
+      setTasks((previousTasks) =>
+        previousTasks.filter((item) => String(getId(item)) !== String(taskId)),
+      );
+      toast.success("Task deleted successfully.");
+    } catch (error) {
+      console.error("Delete task error:", error);
+      toast.error(
+        error.response?.data?.message ||
+          "Unable to delete task. Please try again.",
+      );
+    }
+  };
+
   const handleCreateTask = () => {
     if (!selectedWorkspaceId || !selectedProjectId) return;
+
+    if (!canCreateTaskInSelectedWorkspace) {
+      toast.error(
+        "You don't have permission to create tasks in this workspace.",
+      );
+      return;
+    }
 
     navigate(
       `/workspaces/${selectedWorkspaceId}/projects/${selectedProjectId}/tasks/new`,
@@ -440,7 +451,7 @@ export default function MyTasksPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {canAssignTasks && (
+          {canCreateTasksSomewhere && (
             <Button
               onClick={() => setShowCreateTask((previous) => !previous)}
               className="gap-2"
@@ -469,8 +480,8 @@ export default function MyTasksPage() {
         </div>
       </div>
 
-      {/* Create-task panel: HR and managers only */}
-      {canAssignTasks && showCreateTask && (
+      {/* Create-task panel: workspace owners, admins, and managers */}
+      {canCreateTasksSomewhere && showCreateTask && (
         <section className="rounded-xl border bg-card p-5 shadow-sm">
           <div className="mb-4">
             <h2 className="text-lg font-semibold">Create a task</h2>
@@ -499,11 +510,17 @@ export default function MyTasksPage() {
                 >
                   <option value="">Select a workspace</option>
 
-                  {workspaces.map((workspace) => (
-                    <option key={getId(workspace)} value={getId(workspace)}>
-                      {workspace.name || "Unnamed workspace"}
-                    </option>
-                  ))}
+                  {workspaces
+                    .filter((workspace) =>
+                      ["owner", "admin", "manager"].includes(
+                        String(workspace.role || "").toLowerCase(),
+                      ),
+                    )
+                    .map((workspace) => (
+                      <option key={getId(workspace)} value={getId(workspace)}>
+                        {workspace.name || "Unnamed workspace"}
+                      </option>
+                    ))}
                 </select>
               </div>
 
@@ -547,7 +564,10 @@ export default function MyTasksPage() {
             <Button
               onClick={handleCreateTask}
               disabled={
-                !selectedWorkspaceId || !selectedProjectId || loadingProjects
+                !selectedWorkspaceId ||
+                !selectedProjectId ||
+                loadingProjects ||
+                !canCreateTaskInSelectedWorkspace
               }
               className="gap-2"
             >
@@ -735,7 +755,7 @@ export default function MyTasksPage() {
               : "Try changing your search or filters to find tasks."}
           </p>
 
-          {canAssignTasks && tasks.length === 0 && (
+          {canCreateTasksSomewhere && tasks.length === 0 && (
             <Button
               className="mt-5 gap-2"
               onClick={() => setShowCreateTask(true)}
@@ -752,15 +772,24 @@ export default function MyTasksPage() {
             const overdue = isOverdue(task);
 
             return (
-              <button
-                type="button"
+              <div
                 key={taskId || index}
+                role="link"
+                tabIndex={0}
                 onClick={() =>
                   navigate(
                     `/workspaces/${task._workspaceId}/projects/${task._projectId}/tasks/${taskId}`,
                   )
                 }
-                className="group flex w-full flex-col rounded-xl border bg-card p-5 text-left transition hover:border-primary/50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    navigate(
+                      `/workspaces/${task._workspaceId}/projects/${task._projectId}/tasks/${taskId}`,
+                    );
+                  }
+                }}
+                className="group flex w-full cursor-pointer flex-col rounded-xl border bg-card p-5 text-left transition hover:border-primary/50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="line-clamp-2 font-semibold transition group-hover:text-primary">
@@ -812,7 +841,9 @@ export default function MyTasksPage() {
                   </span>
 
                   <div className="flex items-center gap-2">
-                    {canAssignTasks && (
+                    {["owner", "admin", "manager"].includes(
+                      task._workspaceRole,
+                    ) && (
                       <Button
                         type="button"
                         variant="outline"
@@ -830,7 +861,7 @@ export default function MyTasksPage() {
                     </span>
                   </div>
                 </div>
-              </button>
+              </div>
             );
           })}
         </div>
