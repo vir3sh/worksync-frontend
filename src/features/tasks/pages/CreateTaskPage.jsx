@@ -309,8 +309,7 @@ export default function CreateTaskPage() {
               loading ||
               membersLoading ||
               Boolean(membersError) ||
-              members.length === 0 ||
-              !form.assignedTo
+              members.length === 0
             }
             className="w-full rounded-lg border bg-background px-3 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-60"
           >
@@ -359,8 +358,8 @@ export default function CreateTaskPage() {
 
           {!membersLoading && !membersError && members.length === 0 && (
             <p className="text-xs text-muted-foreground">
-              No project members found. You can create this task without an
-              assignee.
+              No project members found.Add a member to this project before
+              creating an assigned task.
             </p>
           )}
         </div>
@@ -376,7 +375,13 @@ export default function CreateTaskPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={
+              loading ||
+              membersLoading ||
+              Boolean(membersError) ||
+              members.length === 0 ||
+              !form.assignedTo
+            }
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
