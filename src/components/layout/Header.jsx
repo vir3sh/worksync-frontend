@@ -276,6 +276,7 @@ export default function Header({ onMenuClick }) {
   };
 
   // Log out the current user.
+
   const handleLogout = async () => {
     if (loggingOut) return;
 
@@ -285,8 +286,8 @@ export default function Header({ onMenuClick }) {
     try {
       await api.post("/users/logout");
 
-      setProfileOpen(false);
       setUser(null);
+      setProfileOpen(false);
 
       navigate("/login", { replace: true });
     } catch (err) {
